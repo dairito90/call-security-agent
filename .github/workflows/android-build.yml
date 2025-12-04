@@ -20,18 +20,18 @@ jobs:
         distribution: "temurin"
         java-version: "17"
 
-    - name: Enable Gradle wrapper
+    - name: Make gradlew executable
       run: chmod +x ./gradlew
 
-    - name: Configure Gradle memory (fix WorkerLease crash)
+    - name: Configure Gradle JVM memory (Java 17 SAFE)
       run: |
-        echo "org.gradle.jvmargs=-Xmx2G -XX:MaxPermSize=1024m" >> gradle.properties
+        echo "org.gradle.jvmargs=-Xmx2G -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> gradle.properties
         echo "org.gradle.daemon=false" >> gradle.properties
 
     - name: Build Debug APK
       run: ./gradlew clean assembleDebug --stacktrace --no-daemon
 
-    - name: Upload APK artifact
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
