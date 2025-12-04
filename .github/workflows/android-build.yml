@@ -2,16 +2,16 @@ name: Android Build
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout source
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -20,18 +20,16 @@ jobs:
         distribution: "temurin"
         java-version: "17"
 
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
 
-    - name: Configure Gradle JVM memory (Java 17 SAFE)
-      run: |
-        echo "org.gradle.jvmargs=-Xmx2G -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> gradle.properties
-        echo "org.gradle.daemon=false" >> gradle.properties
+    - name: Clean project
+      run: ./gradlew clean --no-daemon
 
     - name: Build Debug APK
-      run: ./gradlew clean assembleDebug --stacktrace --no-daemon
+      run: ./gradlew assembleDebug --stacktrace --no-daemon
 
-    - name: Upload APK Artifact
+    - name: Upload Debug APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
