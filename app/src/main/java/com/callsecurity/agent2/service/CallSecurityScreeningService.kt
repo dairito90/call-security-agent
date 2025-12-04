@@ -1,56 +1,32 @@
 package com.callsecurity.agent2.service
 
-import android.content.Intent
 import android.telecom.Call
 import android.telecom.CallScreeningService
-import com.callsecurity.agent2.core.CallClassifier
-import com.callsecurity.agent2.core.CallMetadata
+import android.telecom.Call.Details
+import android.util.Log
+import com.callsecurity.agent2.core.SpamEngine
 
-class CallSecurityScreeningService : CallScreeningService() {
+class CallShieldScreeningService : CallScreeningService() {
 
-    private val classifier = CallClassifier()
+    override fun onScreenCall(callDetails: Details) {
+        try {
+            val phoneNumber = callDetails.handle.schemeSpecificPart ?: ""
+            Log.d("CallShield", "Incoming call: $phoneNumber")
 
-    override fun onScreenCall(callDetails: Call.Details) {
+            val isSpam = SpamEngine.isSpamNumber(phoneNumber)
 
-        val metadata = CallMetadata(
-            phoneNumber = callDetails.handle?.schemeSpecificPart ?: "",
-            callDirection = if (callDetails.callDirection ==
-                Call.Details.DIRECTION_INCOMING
-            ) "incoming" else "outgoing",
-            timestamp = System.currentTimeMillis()
-        )
-
-        val result = classifier.classify(metadata)
-
-        val response = when (result.category) {
-
-            "spam" -> CallResponse.Builder()
-                .setDisallowCall(true)
-                .setRejectCall(true)
-                .setSkipCallLog(true)
-                .setSkipNotification(true)
+            val response = CallResponse.Builder()
+                .setDisallowCall(isSpam)
+                .setRejectCall(isSpam)
+                .setSilenceCall(isSpam)
+                .setSkipCallLog(isSpam)
+                .setSkipNotification(isSpam)
                 .build()
 
-            "unknown" -> CallResponse.Builder()
-                .setSilenceCall(true)
-                .setSkipCallLog(false)
-                .setSkipNotification(false)
-                .build()
+            respondToCall(callDetails, response)
 
-            else -> CallResponse.Builder()
-                .setDisallowCall(false)
-                .setRejectCall(false)
-                .build()
+        } catch (e: Exception) {
+            Log.e("CallShield", "CallScreeningService error", e)
         }
-
-        respondToCall(callDetails, response)
-
-        sendBroadcast(
-            Intent("CALL_SECURITY_EVENT").apply {
-                putExtra("number", metadata.phoneNumber)
-                putExtra("category", result.category)
-                putExtra("score", result.score)
-            }
-        )
     }
 }
