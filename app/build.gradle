@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'com.callsecurity.agent'
+    namespace 'com.callsecurity.agent2'
     compileSdk 34
 
     defaultConfig {
