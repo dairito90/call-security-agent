@@ -27,4 +27,40 @@ class CallSecurityScreeningService : CallScreeningService() {
         val result = classifier.classify(metadata)
 
         // Decide how Android should handle the call
-        val response = when (result.category
+        val response = when (result.category) {
+
+            "spam" -> {
+                CallResponse.Builder()
+                    .setDisallowCall(true)
+                    .setRejectCall(true)
+                    .setSkipCallLog(false)
+                    .setSkipNotification(true)
+                    .build()
+            }
+
+            "unknown" -> {
+                CallResponse.Builder()
+                    .setDisallowCall(false)
+                    .setRejectCall(false)
+                    .setSkipCallLog(false)
+                    .setSkipNotification(false)
+                    .build()
+            }
+
+            else -> {
+                // safe call
+                CallResponse.Builder()
+                    .setDisallowCall(false)
+                    .setRejectCall(false)
+                    .setSkipCallLog(false)
+                    .setSkipNotification(false)
+                    .build()
+            }
+        }
+
+        // Send the final response to Android
+        respondToCall(callDetails, response)
+
+        // Optional: broadcast classification result inside the app
+        val intent = Intent("com.callsecurity.CALL_CLASSIFIED").apply {
+            putExtra("phoneNumber", metadata.phone
