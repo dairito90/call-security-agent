@@ -1,6 +1,7 @@
 package com.callsecurity.agent2.core
 
 data class CallMetadata(
-    val number: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val phoneNumber: String,
+    val callDirection: String,   // incoming / outgoing
+    val timestamp: Long
 )
