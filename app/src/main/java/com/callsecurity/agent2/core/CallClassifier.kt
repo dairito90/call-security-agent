@@ -2,24 +2,20 @@ package com.callsecurity.agent2.core
 
 class CallClassifier {
 
-    data class ClassificationResult(
+    data class Result(
         val category: String,   // "spam", "unknown", "safe"
-        val score: Int          // 0–100 risk score
+        val score: Int          // scoring model placeholder
     )
 
-    fun classify(metadata: CallMetadata): ClassificationResult {
-
+    fun classify(metadata: CallMetadata): Result {
         val number = metadata.phoneNumber
 
+        // Simple demo logic — replace with AI model later
         return when {
-            number.startsWith("800") || number.startsWith("888") ->
-                ClassificationResult("spam", 90)
-
-            number.length < 10 ->
-                ClassificationResult("unknown", 50)
-
-            else ->
-                ClassificationResult("safe", 5)
+            number.isEmpty() -> Result("unknown", 40)
+            number.startsWith("800") -> Result("spam", 95)
+            number.length < 10 -> Result("unknown", 50)
+            else -> Result("safe", 10)
         }
     }
 }
