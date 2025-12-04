@@ -2,16 +2,16 @@ name: Android Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -20,13 +20,18 @@ jobs:
         distribution: "temurin"
         java-version: "17"
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Enable Gradle wrapper
+      run: chmod +x ./gradlew
+
+    - name: Configure Gradle memory (fix WorkerLease crash)
+      run: |
+        echo "org.gradle.jvmargs=-Xmx2G -XX:MaxPermSize=1024m" >> gradle.properties
+        echo "org.gradle.daemon=false" >> gradle.properties
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --no-daemon
+      run: ./gradlew clean assembleDebug --stacktrace --no-daemon
 
-    - name: Upload APK Artifact
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
