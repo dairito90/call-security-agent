@@ -1,56 +1,25 @@
-package com.callsecurity.agent2.service
+package com.callsecurity.agent2.core
 
-import android.content.Intent
-import android.telecom.Call
-import android.telecom.CallScreeningService
-import android.telecom.CallScreeningService.CallResponse
-import com.callsecurity.agent2.core.CallClassifier
-import com.callsecurity.agent2.core.CallMetadata
+class CallClassifier {
 
-class CallSecurityScreeningService : CallScreeningService() {
+    data class ClassificationResult(
+        val category: String,   // "spam", "unknown", "safe"
+        val score: Int          // 0–100 risk score
+    )
 
-    private val classifier = CallClassifier()
+    fun classify(metadata: CallMetadata): ClassificationResult {
 
-    override fun onScreenCall(callDetails: Call.Details) {
+        val number = metadata.phoneNumber
 
-        val metadata = CallMetadata(
-            phoneNumber = callDetails.handle?.schemeSpecificPart ?: "",
-            callDirection = if (callDetails.callDirection == Call.Details.DIRECTION_INCOMING)
-                "incoming" else "outgoing",
-            timestamp = System.currentTimeMillis()
-        )
+        return when {
+            number.startsWith("800") || number.startsWith("888") ->
+                ClassificationResult("spam", 90)
 
-        val result = classifier.classify(metadata)
+            number.length < 10 ->
+                ClassificationResult("unknown", 50)
 
-        val response = when (result.category) {
-
-            "spam" -> CallResponse.Builder()
-                .setDisallowCall(true)
-                .setRejectCall(true)
-                .setSkipCallLog(true)
-                .setSkipNotification(true)
-                .build()
-
-            "unknown" -> CallResponse.Builder()
-                .setSilenceCall(true)
-                .setSkipCallLog(false)
-                .setSkipNotification(false)
-                .build()
-
-            else -> CallResponse.Builder()
-                .setDisallowCall(false)
-                .setRejectCall(false)
-                .build()
+            else ->
+                ClassificationResult("safe", 5)
         }
-
-        respondToCall(callDetails, response)
-
-        sendBroadcast(
-            Intent("CALL_SECURITY_EVENT").apply {
-                putExtra("number", metadata.phoneNumber)
-                putExtra("category", result.category)
-                putExtra("score", result.score)
-            }
-        )
     }
 }
