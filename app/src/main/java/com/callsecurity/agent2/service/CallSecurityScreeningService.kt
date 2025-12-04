@@ -14,4 +14,17 @@ class CallSecurityScreeningService : CallScreeningService() {
 
         // Extract basic metadata about the incoming call
         val metadata = CallMetadata(
-            phoneNumber = call
+            phoneNumber = callDetails.handle.schemeSpecificPart ?: "",
+            callDirection = if (callDetails.callDirection == Call.Details.DIRECTION_INCOMING) {
+                "incoming"
+            } else {
+                "outgoing"
+            },
+            timestamp = System.currentTimeMillis()
+        )
+
+        // Classify the call: spam / unknown / safe
+        val result = classifier.classify(metadata)
+
+        // Decide how Android should handle the call
+        val response = when (result.category
