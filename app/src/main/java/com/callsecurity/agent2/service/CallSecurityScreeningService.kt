@@ -12,55 +12,52 @@ class CallSecurityScreeningService : CallScreeningService() {
 
     override fun onScreenCall(callDetails: Call.Details) {
 
-        // Extract basic metadata about the incoming call
+        // Extract metadata
         val metadata = CallMetadata(
-            phoneNumber = callDetails.handle.schemeSpecificPart ?: "",
-            callDirection = if (callDetails.callDirection == Call.Details.DIRECTION_INCOMING) {
+            phoneNumber = callDetails.handle?.schemeSpecificPart ?: "",
+            callDirection = if (callDetails.callDirection == Call.Details.DIRECTION_INCOMING)
                 "incoming"
-            } else {
-                "outgoing"
-            },
+            else "outgoing",
             timestamp = System.currentTimeMillis()
         )
 
-        // Classify the call: spam / unknown / safe
+        // Run classifier
         val result = classifier.classify(metadata)
 
-        // Decide how Android should handle the call
+        // Map category → action
         val response = when (result.category) {
 
-            "spam" -> {
-                CallResponse.Builder()
-                    .setDisallowCall(true)
-                    .setRejectCall(true)
-                    .setSkipCallLog(false)
-                    .setSkipNotification(true)
-                    .build()
-            }
+            // BLOCK spam
+            "spam" -> CallResponse.Builder()
+                .setDisallowCall(true)
+                .setRejectCall(true)
+                .setSkipCallLog(true)
+                .setSkipNotification(true)
+                .build()
 
-            "unknown" -> {
-                CallResponse.Builder()
-                    .setDisallowCall(false)
-                    .setRejectCall(false)
-                    .setSkipCallLog(false)
-                    .setSkipNotification(false)
-                    .build()
-            }
+            // SCREEN unknown callers
+            "unknown" -> CallResponse.Builder()
+                .setSilenceCall(true)
+                .setSkipCallLog(false)
+                .setSkipNotification(false)
+                .build()
 
-            else -> {
-                // safe call
-                CallResponse.Builder()
-                    .setDisallowCall(false)
-                    .setRejectCall(false)
-                    .setSkipCallLog(false)
-                    .setSkipNotification(false)
-                    .build()
-            }
+            // ALLOW safe callers
+            else -> CallResponse.Builder()
+                .setDisallowCall(false)
+                .setRejectCall(false)
+                .build()
         }
 
-        // Send the final response to Android
         respondToCall(callDetails, response)
 
-        // Optional: broadcast classification result inside the app
-        val intent = Intent("com.callsecurity.CALL_CLASSIFIED").apply {
-            putExtra("phoneNumber", metadata.phone
+        // Optional: notify app UI about classification
+        sendBroadcast(
+            Intent("CALL_SECURITY_EVENT").apply {
+                putExtra("number", metadata.phoneNumber)
+                putExtra("category", result.category)
+                putExtra("score", result.score)
+            }
+        )
+    }
+}
