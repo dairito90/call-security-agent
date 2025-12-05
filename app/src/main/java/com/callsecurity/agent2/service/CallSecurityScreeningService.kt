@@ -2,36 +2,38 @@ package com.callsecurity.agent2.service
 
 import android.telecom.Call
 import android.telecom.CallScreeningService
-import android.telecom.Call.Details
 import android.util.Log
 import com.callsecurity.agent2.core.CallClassifier
+import com.callsecurity.agent2.core.CallMetadata
 
 class CallSecurityScreeningService : CallScreeningService() {
 
     private val classifier = CallClassifier()
 
-    override fun onScreenCall(callDetails: Details) {
+    override fun onScreenCall(callDetails: Call.Details) {
         try {
-            val phoneNumber = callDetails.handle.schemeSpecificPart ?: ""
-            Log.d("CallShield", "Incoming call: $phoneNumber")
+            val number = callDetails.handle?.schemeSpecificPart ?: ""
+            val direction =
+                if (callDetails.callDirection == Call.Details.DIRECTION_INCOMING) "incoming"
+                else "outgoing"
 
-            val isSpam = classifier.isSpam(phoneNumber)
-            val score = classifier.classificationScore(phoneNumber)
+            val metadata = CallMetadata(number, direction, System.currentTimeMillis())
+            val result = classifier.classify(metadata)
 
-            Log.d("CallShield", "Spam: $isSpam (Score $score)")
+            Log.d("CallShield", "Incoming call: $number score=${result.score} type=${result.category}")
 
             val response = CallResponse.Builder()
-                .setDisallowCall(isSpam)
-                .setRejectCall(isSpam)
-                .setSilenceCall(isSpam)
-                .setSkipCallLog(isSpam)
-                .setSkipNotification(isSpam)
+                .setDisallowCall(result.category == "spam")
+                .setRejectCall(result.category == "spam")
+                .setSilenceCall(result.category == "spam")
+                .setSkipCallLog(result.category == "spam")
+                .setSkipNotification(result.category == "spam")
                 .build()
 
             respondToCall(callDetails, response)
 
         } catch (e: Exception) {
-            Log.e("CallShield", "Error during screening: ${e.message}")
+            Log.e("CallShield", "Error screening call", e)
         }
     }
 }
