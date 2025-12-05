@@ -9,7 +9,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.callsecurity.agent2"
+        applicationId "com.callsecurity.agent2.dev"
         minSdk 28
         targetSdk 34
         versionCode 1
