@@ -2,22 +2,34 @@ package com.callsecurity.agent2.core
 
 object SpamEngine {
 
-    // Very simple rules – you can expand this later
-    private val spamNumbers = setOf(
-        "8001234567",
-        "8880000000"
+    private val knownSpamPatterns = listOf(
+        Regex("^800\\d{4}$"),
+        Regex("^833\\d{4}$"),
+        Regex("^844\\d{4}$"),
+        Regex(".*(insurance|warranty|loan|credit).*", RegexOption.IGNORE_CASE)
     )
 
-    fun isSpam(metadata: CallMetadata): Boolean {
-        val digitsOnly = metadata.phoneNumber.filter { it.isDigit() }
+    private val recentNumbers = mutableListOf<String>()
 
-        // block explicit bad numbers
-        if (spamNumbers.contains(digitsOnly)) return true
+    fun scoreNumber(phone: String): Int {
+        var score = 0
 
-        // suspicious if number is too short
-        if (digitsOnly.length in 1..6) return true
+        if (knownSpamPatterns.any { it.containsMatchIn(phone) }) score += 40
+        if (isSpoofed(phone)) score += 30
+        if (isRepeated(phone)) score += 30
 
-        // default: allow
-        return false
+        return score.coerceIn(0, 100)
+    }
+
+    private fun isSpoofed(phone: String): Boolean {
+        // Local spoof detection (same first 6 digits as device number)
+        return phone.take(6) == "999000" // Placeholder logic
+    }
+
+    private fun isRepeated(phone: String): Boolean {
+        recentNumbers.add(phone)
+        if (recentNumbers.size > 10) recentNumbers.removeAt(0)
+
+        return recentNumbers.count { it == phone } >= 3
     }
 }
