@@ -1,22 +1,51 @@
 package com.callsecurity.agent2.ui
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
-import androidx.appcompat.app.AppCompatActivity
-import com.callsecurity.agent2.R
-import com.google.android.material.button.MaterialButton
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import com.callsecurity.agent2.core.CallClassifier
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        val btnPermission = findViewById<MaterialButton>(R.id.btnPermission)
+        val classifier = CallClassifier()
 
-        btnPermission.setOnClickListener {
-            startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+        setContent {
+            var input by remember { mutableStateOf("") }
+            var result by remember { mutableStateOf("") }
+
+            MaterialTheme {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(title = { Text("CallShield AI") })
+                    }
+                ) { padding ->
+                    Column(modifier = Modifier.padding(padding).padding(16.dp)) {
+                        OutlinedTextField(
+                            value = input,
+                            onValueChange = { input = it },
+                            label = { Text("Enter phone number") }
+                        )
+
+                        Button(
+                            onClick = {
+                                val spamScore = classifier.classificationScore(input)
+                                result = "Spam score: $spamScore"
+                            },
+                            modifier = Modifier.padding(top = 12.dp)
+                        ) {
+                            Text("Analyze")
+                        }
+
+                        if (result.isNotEmpty()) {
+                            Text(result, modifier = Modifier.padding(top = 16.dp))
+                        }
+                    }
+                }
+            }
         }
     }
 }
