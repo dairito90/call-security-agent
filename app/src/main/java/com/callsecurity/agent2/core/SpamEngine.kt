@@ -2,34 +2,51 @@ package com.callsecurity.agent2.core
 
 object SpamEngine {
 
-    private val knownSpamPatterns = listOf(
-        Regex("^800\\d{4}$"),
-        Regex("^833\\d{4}$"),
-        Regex("^844\\d{4}$"),
-        Regex(".*(insurance|warranty|loan|credit).*", RegexOption.IGNORE_CASE)
+    // Common spam patterns (expandable)
+    private val spamPatterns = listOf(
+        Regex("^888"),        // fake toll-free scammers
+        Regex("^800"),
+        Regex("^833"),
+        Regex(".*(loan|credit|warranty).*", RegexOption.IGNORE_CASE)
     )
 
-    private val recentNumbers = mutableListOf<String>()
+    // Numbers that call too frequently
+    private val frequencyMap = HashMap<String, Int>()
 
-    fun scoreNumber(phone: String): Int {
+    fun isSpam(number: String): Boolean {
+        if (number.isBlank()) return false
+
+        val score = getSpamScore(number)
+        return score >= 60
+    }
+
+    fun getSpamScore(number: String): Int {
         var score = 0
 
-        if (knownSpamPatterns.any { it.containsMatchIn(phone) }) score += 40
-        if (isSpoofed(phone)) score += 30
-        if (isRepeated(phone)) score += 30
+        // Pattern check
+        if (spamPatterns.any { it.containsMatchIn(number) }) {
+            score += 40
+        }
+
+        // Frequency check
+        val count = frequencyMap.getOrDefault(number, 0) + 1
+        frequencyMap[number] = count
+
+        if (count > 3) score += 30
+
+        // Spoof check (same prefix as user)
+        if (number.length >= 6) {
+            val prefix = number.take(6)
+            if (prefix == getUserPrefix()) {
+                score += 20
+            }
+        }
 
         return score.coerceIn(0, 100)
     }
 
-    private fun isSpoofed(phone: String): Boolean {
-        // Local spoof detection (same first 6 digits as device number)
-        return phone.take(6) == "999000" // Placeholder logic
-    }
-
-    private fun isRepeated(phone: String): Boolean {
-        recentNumbers.add(phone)
-        if (recentNumbers.size > 10) recentNumbers.removeAt(0)
-
-        return recentNumbers.count { it == phone } >= 3
+    private fun getUserPrefix(): String {
+        // simulated user prefix (replace later with telephony)
+        return "786555"
     }
 }
