@@ -1,25 +1,13 @@
 package com.callsecurity.agent2.core
 
-/**
- * Simple classification wrapper around SpamEngine.
- * 
- * You can expand this later for ML scoring, cloud lookups, etc.
- */
-object CallClassifier {
+class CallClassifier {
 
-    enum class Result {
-        LEGITIMATE,
-        SPAM
+    fun isSpam(phone: String): Boolean {
+        val score = SpamEngine.scoreNumber(phone)
+        return score >= 50
     }
 
-    /**
-     * Classifies a call based on metadata using the SpamEngine rules.
-     */
-    fun classify(metadata: CallMetadata): Result {
-        return if (SpamEngine.isSpam(metadata)) {
-            Result.SPAM
-        } else {
-            Result.LEGITIMATE
-        }
+    fun classificationScore(phone: String): Int {
+        return SpamEngine.scoreNumber(phone)
     }
 }
