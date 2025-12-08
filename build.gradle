@@ -1,6 +1,5 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    // 1. Ensure all repositories are listed here
     repositories {
         google()
         mavenCentral()
@@ -9,8 +8,8 @@ buildscript {
         // FIX: Add the full Android Gradle Plugin (AGP) version
         classpath 'com.android.tools.build:gradle:8.2.2' 
         
-        // FIX: Add the full Kotlin Gradle Plugin (KGP) version (Latest stable is 2.2.21)
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21'
+        // FIX: Add the full Kotlin Gradle Plugin (KGP) version
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0' // Using latest stable major release
     }
 }
 
