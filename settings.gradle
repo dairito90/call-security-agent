@@ -1,2 +1,2 @@
-rootProject.name = "CallSecurityAgent"
+rootProject.name = "CallSecurityAgent" // Corrected case
 include ':app'
