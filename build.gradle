@@ -1,19 +1,28 @@
-// Root build.gradle (Project level)
-
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    // 1. Ensure all repositories are listed here
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:8.2.2"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22"
+        // FIX: Add the full Android Gradle Plugin (AGP) version
+        classpath 'com.android.tools.build:gradle:8.2.2' 
+        
+        // FIX: Add the full Kotlin Gradle Plugin (KGP) version (Latest stable is 2.2.21)
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21'
     }
 }
 
 allprojects {
+    // Ensure all modules use these repositories
     repositories {
         google()
         mavenCentral()
     }
+}
+
+// Optional: Add a clean task for the root project
+tasks.register('clean', Delete) {
+    delete rootProject.buildDir
 }
