@@ -1,7 +1,7 @@
 package com.callsecurity.agent2.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.callsecurity.agent2.R
 
 class MainActivity : AppCompatActivity() {
