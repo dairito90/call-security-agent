@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissions -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
-    <uses-permission android:name="android.permission.CALL_SCREENING" />
+    <!-- Required permissions -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_CALL_LOG"/>
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS"/>
+    <uses-permission android:name="android.permission.CALL_SCREENING"/>
 
     <application
         android:name=".CallSecurityApplication"
-        android:label="Call Shield AI"
         android:icon="@mipmap/ic_launcher"
+        android:label="Call Shield AI"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+        android:theme="@style/Theme.Material3.Light.NoActionBar">
 
-        <!-- Main UI Activity -->
+        <!-- Main Activity -->
         <activity
             android:name=".ui.MainActivity"
             android:exported="true">
-
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
-        <!-- Spam screening service -->
+        <!-- Call Screening Service -->
         <service
             android:name=".service.CallSecurityScreeningService"
-            android:exported="true"
-            android:permission="android.permission.BIND_SCREENING_SERVICE">
-
+            android:label="Call Shield Service"
+            android:permission="android.permission.BIND_SCREENING_SERVICE"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.telecom.CallScreeningService" />
+                <action android:name="android.telecom.CallScreeningService"/>
             </intent-filter>
         </service>
-
     </application>
+
 </manifest>
