@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:text="Call Shield Running"
         android:textColor="#FFFFFF"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:layout_centerInParent="true"/>
 
 </RelativeLayout>
